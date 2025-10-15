@@ -1,3 +1,7 @@
+* {
+  touch-action: manipulation;
+}
+
 .app {
   text-align: center;
   font-family: Arial, sans-serif;
@@ -17,6 +21,9 @@ button {
 }
 
 .board-container {
-  touch-action: none;
-  user-select: none;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  min-height: 100vh;
+  position: relative;
 }

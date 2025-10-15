@@ -28,7 +28,6 @@ const App = () => {
     gridRef.current = grid;
   }, [grid]);
 
-  // 👈 SAME handleKeyDown for desktop
   const handleKeyDown = (e) => {
     if (gameOver || win) return;
     const keys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
@@ -61,11 +60,22 @@ const App = () => {
     onSwipedUp: () => !gameOver && !win && handleSwipe("ArrowUp"),
     onSwipedDown: () => !gameOver && !win && handleSwipe("ArrowDown"),
     preventScrollOnSwipe: true,
-    trackMouse: true, // Test on desktop too!
+    trackMouse: true,
+    swipeDuration: 500,
+    minSwipeDistance: 20,
   });
 
   useEffect(() => {
-    boardRef.current?.focus();
+    const focusBoard = () => {
+      boardRef.current?.focus();
+    };
+    focusBoard();
+    window.addEventListener('resize', focusBoard);
+    window.addEventListener('orientationchange', focusBoard);
+    return () => {
+      window.removeEventListener('resize', focusBoard);
+      window.removeEventListener('orientationchange', focusBoard);
+    };
   }, []);
 
   const restartGame = () => {
@@ -74,7 +84,7 @@ const App = () => {
     setScore(0);
     setGameOver(false);
     setWin(false);
-    boardRef.current?.focus();
+    setTimeout(() => boardRef.current?.focus(), 100);
   };
 
   return (
@@ -87,6 +97,10 @@ const App = () => {
         onKeyDown={handleKeyDown}
         {...swipeHandlers}
         ref={boardRef}
+        style={{ 
+          minHeight: '100vh',
+          position: 'relative'
+        }}
       >
         <Board grid={grid} />
       </div>
