@@ -1,0 +1,17 @@
+.app {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  background-color: #faf8ef;
+  height: 100vh;
+  padding-top: 40px;
+}
+
+h1 {
+  color: #776e65;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+}
