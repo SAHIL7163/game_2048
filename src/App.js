@@ -1,58 +1,43 @@
-import React, { useEffect, useState } from "react";
-import Board from "./component/Board";
-import {
-  createEmptyGrid,
-  addRandomTile,
-  moveLeft,
-  moveRight,
-  moveUp,
-  moveDown,
-  checkWin,
-  checkLose,
-} from "./utils/logic";
-import { calculateScore } from "./utils/helpers";
-
-import "./App.css";
+import React, { useState, useEffect, useRef } from "react";
 
 const App = () => {
   const [grid, setGrid] = useState(createEmptyGrid());
-  const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
   const [win, setWin] = useState(false);
 
-  useEffect(() => {
-    let newGrid = createEmptyGrid();
-    newGrid = addRandomTile(addRandomTile(newGrid));
-    setGrid([...newGrid]);
-  }, []);
+  const gridRef = useRef(grid);
+  const boardRef = useRef(null);
 
-  const handleKeyDown = (event) => {
-    if (gameOver) return;
+  useEffect(() => {
+    gridRef.current = grid;
+  }, [grid]);
+
+  const handleKeyDown = (e) => {
+    if (gameOver || win) return;
 
     const keys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
-    if (!keys.includes(event.key)) return;
+    if (!keys.includes(e.key)) return;
 
-    event.preventDefault();
+    e.preventDefault();
 
     let newGrid;
-    switch (event.key) {
-      case "ArrowUp":
-        newGrid = moveUp(grid);
-        break;
-      case "ArrowDown":
-        newGrid = moveDown(grid);
-        break;
+    switch (e.key) {
       case "ArrowLeft":
-        newGrid = moveLeft(grid);
+        newGrid = moveLeft(gridRef.current);
         break;
       case "ArrowRight":
-        newGrid = moveRight(grid);
+        newGrid = moveRight(gridRef.current);
         break;
-      default:
-        return;
+      case "ArrowUp":
+        newGrid = moveUp(gridRef.current);
+        break;
+      case "ArrowDown":
+        newGrid = moveDown(gridRef.current);
+        break;
     }
 
-    if (JSON.stringify(newGrid) !== JSON.stringify(grid)) {
+    if (JSON.stringify(newGrid) !== JSON.stringify(gridRef.current)) {
       newGrid = addRandomTile(newGrid);
       setGrid([...newGrid]);
       setScore(calculateScore(newGrid));
@@ -63,31 +48,24 @@ const App = () => {
   };
 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [grid, gameOver]);
-
-  const restartGame = () => {
-    let newGrid = createEmptyGrid();
-    newGrid = addRandomTile(addRandomTile(newGrid));
-    setGrid([...newGrid]);
-    setScore(0);
-    setGameOver(false);
-    setWin(false);
-  };
+    boardRef.current.focus();
+  }, []);
 
   return (
     <div className="app">
       <h1>2048 Game</h1>
       <p>Score: {score}</p>
-      <Board grid={grid} />
-
+      <div
+        className="board-container"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        ref={boardRef}
+      >
+        <Board grid={grid} />
+      </div>
       {win && <div className="message">🎉 You Win!</div>}
       {gameOver && <div className="message">💀 Game Over!</div>}
-
       <button onClick={restartGame}>Restart</button>
     </div>
   );
 };
-
-export default App;
