@@ -1,4 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import Board from "./component/Board";
+import {
+  createEmptyGrid,
+  addRandomTile,
+  moveLeft,
+  moveRight,
+  moveUp,
+  moveDown,
+  checkWin,
+  checkLose,
+} from "./utils/logic";
+import { calculateScore } from "./utils/helpers";
+
+import "./App.css";
 
 const App = () => {
   const [grid, setGrid] = useState(createEmptyGrid());
@@ -51,6 +65,18 @@ const App = () => {
     boardRef.current.focus();
   }, []);
 
+  const restartGame = () => {
+    let newGrid = createEmptyGrid();
+    newGrid = addRandomTile(addRandomTile(newGrid));
+    setGrid([...newGrid]);
+    setScore(0);
+    setGameOver(false);
+    setWin(false);
+    if (boardRef.current) {
+      boardRef.current.focus();
+    }
+  };
+
   return (
     <div className="app">
       <h1>2048 Game</h1>
@@ -69,3 +95,5 @@ const App = () => {
     </div>
   );
 };
+
+export default App;
