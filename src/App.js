@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import Board from "./component/Board";
+import { useSwipeable } from "react-swipeable"; 
 import {
   createEmptyGrid,
   addRandomTile,
@@ -27,54 +28,53 @@ const App = () => {
     gridRef.current = grid;
   }, [grid]);
 
+  // 👈 SAME handleKeyDown for desktop
   const handleKeyDown = (e) => {
     if (gameOver || win) return;
-
     const keys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
     if (!keys.includes(e.key)) return;
-
     e.preventDefault();
+    handleSwipe(e.key);
+  };
 
+  const handleSwipe = (direction) => {
     let newGrid;
-    switch (e.key) {
-      case "ArrowLeft":
-        newGrid = moveLeft(gridRef.current);
-        break;
-      case "ArrowRight":
-        newGrid = moveRight(gridRef.current);
-        break;
-      case "ArrowUp":
-        newGrid = moveUp(gridRef.current);
-        break;
-      case "ArrowDown":
-        newGrid = moveDown(gridRef.current);
-        break;
+    switch (direction) {
+      case "ArrowLeft": newGrid = moveLeft(gridRef.current); break;
+      case "ArrowRight": newGrid = moveRight(gridRef.current); break;
+      case "ArrowUp": newGrid = moveUp(gridRef.current); break;
+      case "ArrowDown": newGrid = moveDown(gridRef.current); break;
     }
 
     if (JSON.stringify(newGrid) !== JSON.stringify(gridRef.current)) {
       newGrid = addRandomTile(newGrid);
       setGrid([...newGrid]);
       setScore(calculateScore(newGrid));
-
       if (checkWin(newGrid)) setWin(true);
       else if (checkLose(newGrid)) setGameOver(true);
     }
   };
 
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => !gameOver && !win && handleSwipe("ArrowLeft"),
+    onSwipedRight: () => !gameOver && !win && handleSwipe("ArrowRight"),
+    onSwipedUp: () => !gameOver && !win && handleSwipe("ArrowUp"),
+    onSwipedDown: () => !gameOver && !win && handleSwipe("ArrowDown"),
+    preventScrollOnSwipe: true,
+    trackMouse: true, // Test on desktop too!
+  });
+
   useEffect(() => {
-    boardRef.current.focus();
+    boardRef.current?.focus();
   }, []);
 
   const restartGame = () => {
-    let newGrid = createEmptyGrid();
-    newGrid = addRandomTile(addRandomTile(newGrid));
+    let newGrid = addRandomTile(addRandomTile(createEmptyGrid()));
     setGrid([...newGrid]);
     setScore(0);
     setGameOver(false);
     setWin(false);
-    if (boardRef.current) {
-      boardRef.current.focus();
-    }
+    boardRef.current?.focus();
   };
 
   return (
@@ -85,6 +85,7 @@ const App = () => {
         className="board-container"
         tabIndex={0}
         onKeyDown={handleKeyDown}
+        {...swipeHandlers}
         ref={boardRef}
       >
         <Board grid={grid} />
