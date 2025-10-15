@@ -29,6 +29,11 @@ const App = () => {
   const handleKeyDown = (event) => {
     if (gameOver) return;
 
+    const keys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+    if (!keys.includes(event.key)) return;
+
+    event.preventDefault();
+
     let newGrid;
     switch (event.key) {
       case "ArrowUp":
