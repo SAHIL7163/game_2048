@@ -61,22 +61,8 @@ const App = () => {
     onSwipedDown: () => !gameOver && !win && handleSwipe("ArrowDown"),
     preventScrollOnSwipe: true,
     trackMouse: true,
-    swipeDuration: 500,
-    minSwipeDistance: 20,
+    minSwipeDistance: 10,
   });
-
-  useEffect(() => {
-    const focusBoard = () => {
-      boardRef.current?.focus();
-    };
-    focusBoard();
-    window.addEventListener('resize', focusBoard);
-    window.addEventListener('orientationchange', focusBoard);
-    return () => {
-      window.removeEventListener('resize', focusBoard);
-      window.removeEventListener('orientationchange', focusBoard);
-    };
-  }, []);
 
   const restartGame = () => {
     let newGrid = addRandomTile(addRandomTile(createEmptyGrid()));
@@ -84,29 +70,32 @@ const App = () => {
     setScore(0);
     setGameOver(false);
     setWin(false);
-    setTimeout(() => boardRef.current?.focus(), 100);
   };
 
   return (
     <div className="app">
-      <h1>2048 Game</h1>
-      <p>Score: {score}</p>
-      <div
-        className="board-container"
-        tabIndex={0}
-        onKeyDown={handleKeyDown}
-        {...swipeHandlers}
-        ref={boardRef}
-        style={{ 
-          minHeight: '100vh',
-          position: 'relative'
-        }}
-      >
-        <Board grid={grid} />
+      <div className="header">
+        <h1>2048 Game</h1>
+        <p>Score: {score}</p>
+        <button onClick={restartGame}>Restart</button>
       </div>
+      
+      <div
+        className="swipe-area"
+        {...swipeHandlers}
+      >
+        <div
+          className="board-container"
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+          ref={boardRef}
+        >
+          <Board grid={grid} />
+        </div>
+      </div>
+
       {win && <div className="message">🎉 You Win!</div>}
       {gameOver && <div className="message">💀 Game Over!</div>}
-      <button onClick={restartGame}>Restart</button>
     </div>
   );
 };

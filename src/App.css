@@ -1,29 +1,67 @@
-* {
-  touch-action: manipulation;
-}
-
 .app {
   text-align: center;
   font-family: Arial, sans-serif;
   background-color: #faf8ef;
-  height: 100vh;
-  padding-top: 40px;
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.header {
+  margin-bottom: 20px;
 }
 
 h1 {
   color: #776e65;
+  margin: 0 0 10px 0;
+}
+
+.header p {
+  margin: 0 0 10px 0;
+  font-size: 18px;
 }
 
 button {
-  margin-top: 20px;
   padding: 10px 20px;
   font-size: 16px;
+  background: #8f7a66;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.swipe-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  width: 100%;
 }
 
 .board-container {
-  touch-action: none !important;
-  user-select: none !important;
-  -webkit-user-select: none !important;
-  min-height: 100vh;
-  position: relative;
+  user-select: none;
+  max-width: 500px;
+  width: 100%;
+}
+
+.message {
+  font-size: 24px;
+  margin: 20px;
+  font-weight: bold;
+}
+
+/* MOBILE PERFECT */
+@media (max-width: 600px) {
+  .app {
+    padding: 10px;
+  }
+  
+  .swipe-area {
+    min-height: 60vh;
+    height: calc(100vh - 150px);
+  }
 }
