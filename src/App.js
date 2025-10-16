@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import Board from "./component/Board";
+import PausePopup from "./component/PausePopup";
+import SizePopup from "./component/SizePopup";
 import { useSwipeable } from "react-swipeable";
 import {
   createEmptyGrid,
@@ -11,10 +13,7 @@ import {
   checkWin,
   checkLose,
 } from "./utils/logic";
-import { calculateScore } from "./utils/helpers";
 import "./App.css";
-import PausePopup from "./component/PausePopup";
-import SizePopup from "./component/SizePopup";
 
 const App = () => {
   const [grid, setGrid] = useState([]);
@@ -37,10 +36,15 @@ const App = () => {
   useEffect(() => {
     if (!showSizePopup) {
       let newGrid = createEmptyGrid(boardSize);
-      addRandomTile(addRandomTile(newGrid));
-      setGrid([...newGrid]);
+      newGrid = addRandomTile(addRandomTile(newGrid));
+      setGrid(newGrid);
+      setScore(0);
+      setGameOver(false);
+      setWin(false);
+      setPaused(false);
     }
   }, [showSizePopup, boardSize]);
+
 
   useEffect(() => {
     if (score > highScore) {
@@ -49,67 +53,66 @@ const App = () => {
     }
   }, [score, highScore]);
 
-  const handleKeyDown = (e) => {
-    if (gameOver || win || paused) return;
-    const keys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
-    if (!keys.includes(e.key)) return;
-    e.preventDefault();
-    handleSwipe(e.key);
-  };
-
   const handleSwipe = (direction) => {
-    if (paused) return;
-    let newGrid;
+    if (paused || gameOver || win) return;
+
+    let result;
     switch (direction) {
       case "ArrowLeft":
-        newGrid = moveLeft(gridRef.current);
+        result = moveLeft(gridRef.current);
         break;
       case "ArrowRight":
-        newGrid = moveRight(gridRef.current);
+        result = moveRight(gridRef.current);
         break;
       case "ArrowUp":
-        newGrid = moveUp(gridRef.current);
+        result = moveUp(gridRef.current);
         break;
       case "ArrowDown":
-        newGrid = moveDown(gridRef.current);
+        result = moveDown(gridRef.current);
         break;
       default:
         return;
     }
 
-    if (JSON.stringify(newGrid) !== JSON.stringify(gridRef.current)) {
-      newGrid = addRandomTile(newGrid);
-      setGrid([...newGrid]);
-      setScore(calculateScore(newGrid));
+    if (result.moved) {
+      const newGrid = addRandomTile(result.newBoard);
+      setGrid(newGrid);
+      setScore((prev) => prev + result.score);
+
       if (checkWin(newGrid)) setWin(true);
       else if (checkLose(newGrid)) setGameOver(true);
     }
   };
 
   const swipeHandlers = useSwipeable({
-    onSwipedLeft: () =>
-      !gameOver && !win && !paused && handleSwipe("ArrowLeft"),
-    onSwipedRight: () =>
-      !gameOver && !win && !paused && handleSwipe("ArrowRight"),
-    onSwipedUp: () => !gameOver && !win && !paused && handleSwipe("ArrowUp"),
-    onSwipedDown: () =>
-      !gameOver && !win && !paused && handleSwipe("ArrowDown"),
+    onSwipedLeft: () => handleSwipe("ArrowLeft"),
+    onSwipedRight: () => handleSwipe("ArrowRight"),
+    onSwipedUp: () => handleSwipe("ArrowUp"),
+    onSwipedDown: () => handleSwipe("ArrowDown"),
     preventScrollOnSwipe: true,
     trackMouse: true,
-    minSwipeDistance: 10,
   });
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      const keys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+      if (keys.includes(e.key)) handleSwipe(e.key);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [paused, gameOver, win]);
 
   const restartGame = () => {
     let newGrid = createEmptyGrid(boardSize);
-    addRandomTile(addRandomTile(newGrid));
-    setGrid([...newGrid]);
+    newGrid = addRandomTile(addRandomTile(newGrid));
+    setGrid(newGrid);
     setScore(0);
     setGameOver(false);
     setWin(false);
     setPaused(false);
   };
 
-  const StartnewGame = () => {
+  const StartNewGame = () => {
     setShowSizePopup(true);
     setScore(0);
     setGameOver(false);
@@ -123,13 +126,8 @@ const App = () => {
     setShowSizePopup(false);
   };
 
-  const togglePause = () => {
-    setPaused(true);
-  };
-
-  const resumeGame = () => {
-    setPaused(false);
-  };
+  const togglePause = () => setPaused(true);
+  const resumeGame = () => setPaused(false);
 
   return (
     <div className="app">
@@ -153,19 +151,16 @@ const App = () => {
           </div>
 
           <div className="swipe-area" {...swipeHandlers}>
-            <div
-              className="board-container"
-              onKeyDown={handleKeyDown}
-              tabIndex={0}
-            >
+            <div className="board-container">
               <Board grid={grid} />
             </div>
           </div>
 
           {win && <div className="message">You Win!</div>}
           {gameOver && <div className="message">Game Over!</div>}
+
           {paused && (
-            <PausePopup onResume={resumeGame} StartnewGame={StartnewGame} />
+            <PausePopup onResume={resumeGame} StartNewGame={StartNewGame} />
           )}
         </>
       )}

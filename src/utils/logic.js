@@ -1,10 +1,5 @@
-export const createEmptyGrid = (size = 4) => {
-  const board = [];
-  for (let i = 0; i < size; i++) {
-    board.push(Array(size).fill(0));
-  }
-  return board;
-};
+export const createEmptyGrid = (size = 4) =>
+  Array.from({ length: size }, () => Array(size).fill(0));
 
 export const addRandomTile = (board) => {
   const emptyCells = [];
@@ -20,53 +15,84 @@ export const addRandomTile = (board) => {
 
   const { r, c } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
   const newValue = Math.random() < 0.9 ? 2 : 4;
-  board[r][c] = newValue;
-  return board;
+
+  const newBoard = board.map((row) => [...row]);
+  newBoard[r][c] = newValue;
+  return newBoard;
 };
 
-const slideLeft = (row, size) => {
-  let newRow = row.filter((val) => val !== 0);
-  for (let i = 0; i < newRow.length - 1; i++) {
-    if (newRow[i] === newRow[i + 1]) {
-      newRow[i] *= 2;
-      newRow[i + 1] = 0;
+const slideLeftWithScore = (row) => {
+  const newRow = row.filter((v) => v !== 0);
+  let mergedRow = [];
+  let score = 0;
+
+  for (let i = 0; i < newRow.length; i++) {
+    if (i + 1 < newRow.length && newRow[i] === newRow[i + 1]) {
+      mergedRow.push(newRow[i] * 2);
+      score += newRow[i] * 2;
+      i++; 
+    } else {
+      mergedRow.push(newRow[i]);
     }
   }
-  newRow = newRow.filter((val) => val !== 0);
-  while (newRow.length < size) {
-    newRow.push(0);
-  }
-  return newRow;
+
+  while (mergedRow.length < row.length) mergedRow.push(0);
+
+  return { row: mergedRow, score };
 };
 
+const boardsEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
 export const moveLeft = (board) => {
-  const size = board.length;
-  return board.map((row) => slideLeft([...row], size));
+  let totalScore = 0;
+  const newBoard = board.map((row) => {
+    const { row: newRow, score } = slideLeftWithScore(row);
+    totalScore += score;
+    return newRow;
+  });
+  const moved = !boardsEqual(board, newBoard);
+  return { newBoard, moved, score: totalScore };
 };
 
 export const moveRight = (board) => {
-  const size = board.length;
-  return board.map((row) => slideLeft([...row].reverse(), size).reverse());
+  let totalScore = 0;
+  const newBoard = board.map((row) => {
+    const reversed = [...row].reverse();
+    const { row: newRow, score } = slideLeftWithScore(reversed);
+    totalScore += score;
+    return newRow.reverse();
+  });
+  const moved = !boardsEqual(board, newBoard);
+  return { newBoard, moved, score: totalScore };
 };
 
-export const transpose = (board) => {
-  return board[0].map((_, c) => board.map((row) => row[c]));
-};
+export const transpose = (board) => board[0].map((_, c) => board.map((row) => row[c]));
 
 export const moveUp = (board) => {
-  const size = board.length;
   const transposed = transpose(board);
-  const moved = transposed.map((row) => slideLeft([...row], size));
-  return transpose(moved);
+  let totalScore = 0;
+  const movedRows = transposed.map((row) => {
+    const { row: newRow, score } = slideLeftWithScore(row);
+    totalScore += score;
+    return newRow;
+  });
+  const newBoard = transpose(movedRows);
+  const moved = !boardsEqual(board, newBoard);
+  return { newBoard, moved, score: totalScore };
 };
 
 export const moveDown = (board) => {
-  const size = board.length;
   const transposed = transpose(board);
-  const moved = transposed.map((row) =>
-    slideLeft([...row].reverse(), size).reverse()
-  );
-  return transpose(moved);
+  let totalScore = 0;
+  const movedRows = transposed.map((row) => {
+    const reversed = [...row].reverse();
+    const { row: newRow, score } = slideLeftWithScore(reversed);
+    totalScore += score;
+    return newRow.reverse();
+  });
+  const newBoard = transpose(movedRows);
+  const moved = !boardsEqual(board, newBoard);
+  return { newBoard, moved, score: totalScore };
 };
 
 export const checkWin = (grid) => grid.some((row) => row.includes(2048));
