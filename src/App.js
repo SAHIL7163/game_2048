@@ -150,7 +150,7 @@ const App = () => {
           </div>
 
           <div className="swipe-area">
-            <div {...swipeHandlers} className="board-container" >
+            <div {...swipeHandlers} className="board-container">
               <Board grid={grid} />
             </div>
           </div>
