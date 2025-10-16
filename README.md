@@ -1,4 +1,4 @@
-# Game 4080 — 2048 (GUI)
+# Game 2048 
 
 A React-based implementation of the 2048 game (GUI only). Combine tiles with the same number to reach 2048. This README explains installation, running, gameplay, implementation details, and deliverables.
 
