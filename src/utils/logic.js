@@ -1,6 +1,4 @@
-export const GRID_SIZE = 4;
-
-export const createEmptyGrid = (size = GRID_SIZE) => {
+export const createEmptyGrid = (size = 4) => {
   const board = [];
   for (let i = 0; i < size; i++) {
     board.push(Array(size).fill(0));
@@ -10,6 +8,8 @@ export const createEmptyGrid = (size = GRID_SIZE) => {
 
 export const addRandomTile = (board) => {
   const emptyCells = [];
+  const size = board.length;
+
   board.forEach((row, r) => {
     row.forEach((cell, c) => {
       if (cell === 0) emptyCells.push({ r, c });
@@ -20,12 +20,11 @@ export const addRandomTile = (board) => {
 
   const { r, c } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
   const newValue = Math.random() < 0.9 ? 2 : 4;
-
   board[r][c] = newValue;
   return board;
 };
 
-const slideLeft = (row) => {
+const slideLeft = (row, size) => {
   let newRow = row.filter((val) => val !== 0);
   for (let i = 0; i < newRow.length - 1; i++) {
     if (newRow[i] === newRow[i + 1]) {
@@ -34,18 +33,20 @@ const slideLeft = (row) => {
     }
   }
   newRow = newRow.filter((val) => val !== 0);
-  while (newRow.length < GRID_SIZE) {
+  while (newRow.length < size) {
     newRow.push(0);
   }
   return newRow;
 };
 
 export const moveLeft = (board) => {
-  return board.map((row) => slideLeft([...row]));
+  const size = board.length;
+  return board.map((row) => slideLeft([...row], size));
 };
 
 export const moveRight = (board) => {
-  return board.map((row) => slideLeft([...row].reverse()).reverse());
+  const size = board.length;
+  return board.map((row) => slideLeft([...row].reverse(), size).reverse());
 };
 
 export const transpose = (board) => {
@@ -53,15 +54,17 @@ export const transpose = (board) => {
 };
 
 export const moveUp = (board) => {
+  const size = board.length;
   const transposed = transpose(board);
-  const moved = transposed.map((row) => slideLeft([...row]));
+  const moved = transposed.map((row) => slideLeft([...row], size));
   return transpose(moved);
 };
 
 export const moveDown = (board) => {
+  const size = board.length;
   const transposed = transpose(board);
   const moved = transposed.map((row) =>
-    slideLeft([...row].reverse()).reverse()
+    slideLeft([...row].reverse(), size).reverse()
   );
   return transpose(moved);
 };
@@ -69,11 +72,12 @@ export const moveDown = (board) => {
 export const checkWin = (grid) => grid.some((row) => row.includes(2048));
 
 export const checkLose = (grid) => {
-  for (let r = 0; r < GRID_SIZE; r++) {
-    for (let c = 0; c < GRID_SIZE; c++) {
+  const size = grid.length;
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
       if (grid[r][c] === 0) return false;
-      if (c < GRID_SIZE - 1 && grid[r][c] === grid[r][c + 1]) return false;
-      if (r < GRID_SIZE - 1 && grid[r][c] === grid[r + 1][c]) return false;
+      if (c < size - 1 && grid[r][c] === grid[r][c + 1]) return false;
+      if (r < size - 1 && grid[r][c] === grid[r + 1][c]) return false;
     }
   }
   return true;
