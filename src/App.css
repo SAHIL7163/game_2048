@@ -48,17 +48,14 @@ button {
 }
 
 .swipe-area {
-  flex: 1;
   display: flex;
   justify-content: center;
-  width: 100%;
   margin-top: 20px;
 }
 
 .board-container {
   user-select: none;
-  max-width: 500px;
-  width: 100%;
+  width: fit-content; 
 }
 
 .message {

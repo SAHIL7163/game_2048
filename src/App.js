@@ -45,7 +45,6 @@ const App = () => {
     }
   }, [showSizePopup, boardSize]);
 
-
   useEffect(() => {
     if (score > highScore) {
       setHighScore(score);
@@ -150,8 +149,8 @@ const App = () => {
             </div>
           </div>
 
-          <div className="swipe-area" {...swipeHandlers}>
-            <div className="board-container">
+          <div className="swipe-area">
+            <div {...swipeHandlers} className="board-container" >
               <Board grid={grid} />
             </div>
           </div>
